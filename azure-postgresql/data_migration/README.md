@@ -16,21 +16,26 @@ The tool chunks out the source table based on a watermark (id) columns and uses 
 - If workload is append only, help improve initial load and reduce downtime for the lag (during initial load) to be applied. 
 
 ## Usage:
+
+1. Modify the `Config` class to include the connection strings necessary
+
+2. Execute the command using `python` or `pypy`
+
 ```
-python parallel_migrate.py "source_connection_string" source_table "destination_connection_string" destination_table number_of_threads count_of_table
+pypy parallel_migrate.py -s wus -st erange_private.raw_signals -d local -dt erange_private.raw_signals -c 1097557 -d 2
 ```
-Ex:
-```
-python parallel_migrate.py "host=test_src.postgres.database.azure.com port=5432 dbname=postgres user=test@test_src password=xxxx sslmode=require" test_table "host=test_dest.postgres.database.azure.com port=5432 dbname=postgres user=test@test_dest password=xxxx sslmode=require" test_table 8 411187501
-```
+
 *count_of_table* can be got by query the sequence value:
 Ex:
 ```
-select * from events_id_seq;
+select count(*) from table where device_id in (...);
 ```
-(OR) *count_of_table* can be got by running a count(*) query on the table.
 
 Currently the usage is restricted to migrate a single large table. But you can run multiple instances of this script to migrate multiple tables. Customers can compliment this script with pg_dump/pg_restore ie. use pg_dump/pg_restore for the smaller tables and parallel loader for large tables.
+
+## Advices
+
+This was tested using `pypy3.9-7.3.9` for extra performance.
 
 ## Pre-requisites/Recommendations
 - sequential id column has to be present on the table.
